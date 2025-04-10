@@ -11,7 +11,8 @@ public class MatrixMultiplication
     private int size;
     private int maxThreads;
     private string ThreadsUsage;
-    private Stopwatch stopwatch;
+    //private Stopwatch stopwatch;
+    private long srednia;
     public int[,] tablica1 {get;}
     public int[,] tablica2 {get;}
     public int[,] wynik {get;}
@@ -21,7 +22,8 @@ public class MatrixMultiplication
         size = MatrixSize;
         maxThreads = MaxThreads;
         ThreadsUsage = "null";
-        stopwatch = new Stopwatch(); // Do pomiaru czasu
+        //stopwatch = new Stopwatch(); // Do pomiaru czasu
+        srednia = 0;
 
         tablica1 = new int[size, size];
         tablica2 = new int[size, size];
@@ -32,32 +34,42 @@ public class MatrixMultiplication
 
 
     public string calculations() {
+        Stopwatch stopwatch = new Stopwatch(); // Do pomiaru czasu
         Random random = new Random();
+        const int liczba_pomiarow = 10;
 
         ParallelOptions options = new ParallelOptions() {MaxDegreeOfParallelism = maxThreads};
         int[] threadUsage = new int[Environment.ProcessorCount];
 
         for (int w = 0; w < size; w++) for (int k = 0; k < size; k++) {
-                tablica1[w, k] = random.Next(0, 101);
-                tablica2[w, k] = random.Next(0, 101);
+                tablica1[w, k] = random.Next(0, 31);
+                tablica2[w, k] = random.Next(0, 31);
         }
 
 
-        stopwatch.Start();
-        Parallel.For(0, size, options, w => {
-            for (int k = 0; k < size; k++) {
-                int sum = 0;
-                for (int n = 0; n < size; n++) sum += tablica1[w, n] * tablica2[n, k];
-                wynik[w, k] = sum;
-            }
+        for (int p = 0; p < liczba_pomiarow; ++p)
+        {
+            stopwatch.Restart();
+            stopwatch.Start();
+            Parallel.For(0, size, options, w =>
+            {
+                for (int k = 0; k < size; k++)
+                {
+                    int sum = 0;
+                    for (int n = 0; n < size; n++) sum += tablica1[w, n] * tablica2[n, k];
+                    wynik[w, k] = sum;
+                }
 
-            int threadId = Thread.CurrentThread.ManagedThreadId;
+                int threadId = Thread.CurrentThread.ManagedThreadId;
 
-            // Sprawdzamy, czy indeks nie wychodzi poza zakres
-            int index = threadId % threadUsage.Length;
-            Interlocked.Increment(ref threadUsage[index]); // Operacja jest wykonywana atomowo
-        });
-        stopwatch.Stop();
+                // Sprawdzamy, czy indeks nie wychodzi poza zakres
+                int index = threadId % threadUsage.Length;
+                Interlocked.Increment(ref threadUsage[index]); // Operacja jest wykonywana atomowo
+            });
+            stopwatch.Stop();
+            srednia += stopwatch.ElapsedMilliseconds;
+        }
+        srednia /= 10;
 
         ThreadsUsage = string.Join(" ", threadUsage);
         return ReportAfterCalculations();
@@ -70,11 +82,11 @@ public class MatrixMultiplication
 
     public string ReportAfterCalculations() {
         var result = new System.Text.StringBuilder();
-        result.Append("----------------------------------------" + Environment.NewLine);
         result.Append("Liczba Wątków: " + maxThreads + Environment.NewLine);
         result.Append("Wiekość kwatratowych macierzy m*m: " + size.ToString() + Environment.NewLine);
         result.Append("Wykorzystanie wątków programie: " + ThreadsUsage + Environment.NewLine);
-        result.Append("Czas wykonania: " + stopwatch.ElapsedMilliseconds + "ms" + Environment.NewLine);
+        //result.Append("Czas wykonania: " + stopwatch.ElapsedMilliseconds + "ms" + Environment.NewLine);
+        result.Append("Średni czas wykonania: " + srednia + "ms" + Environment.NewLine);
         return result.ToString();
     }
 
