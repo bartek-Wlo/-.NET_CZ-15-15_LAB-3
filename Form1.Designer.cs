@@ -157,7 +157,9 @@
             FinalRaportTextBox.Text += multiplication.calculations();
             matrixTextBox1.Text = MatrixMultiplication.TabToString(multiplication.tablica1);
             matrixTextBox2.Text = MatrixMultiplication.TabToString(multiplication.tablica2);
-            matrixTextBox3.Text = MatrixMultiplication.TabToString(multiplication.wynik);
+            matrixTextBox3.Text = MatrixMultiplication.TabToString(multiplication.wynik_paralel);
+            matrixTextBox3.Text += Environment.NewLine;
+            matrixTextBox3.Text += MatrixMultiplication.TabToString(multiplication.wynik_threads);
         }
     }
 }
