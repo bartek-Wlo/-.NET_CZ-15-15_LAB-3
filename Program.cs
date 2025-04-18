@@ -12,7 +12,7 @@ static class Program
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
         Console.WriteLine("Okno Windows Forms START.\n...");
-        Application.Run(new Form1());
+        Application.Run(new Form0());
         Console.WriteLine("Okno Windows Forms END.\n");
     }    
 }

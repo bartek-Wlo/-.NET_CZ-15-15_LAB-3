@@ -1,6 +1,6 @@
 ﻿namespace ParallelWatki
 {
-    partial class Form1
+    partial class Form12
     {
         /// <summary>
         ///  Required designer variable.
