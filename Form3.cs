@@ -9,25 +9,17 @@ namespace ParallelWatki
     {
         private Button buttonLoadFile;
         private Button buttonProcess;
-        private PictureBox pictureBoxOriginal;
+        private volatile PictureBox pictureBoxOriginal;
         private PictureBox pictureBoxResult1;
         private PictureBox pictureBoxResult2;
         private PictureBox pictureBoxResult3;
         private PictureBox pictureBoxResult4;
         private SplitContainer splitContainerMain;
         private TableLayoutPanel tableLayoutPanelResults;
+        private const int winWidth = 1880;
 
         public Form3()
         {
-            InitializeComponent(); // Ważne, aby wywołać metodę generowaną przez projektanta
-            SetupLayout();         // Metoda do ustawienia kontrolek programowo
-        }
-
-        private void SetupLayout()
-        {
-            this.SuspendLayout();
-
-            // --- Kontrolki Główne ---
             this.buttonLoadFile = new Button();
             this.buttonProcess = new Button();
             this.splitContainerMain = new SplitContainer();
@@ -37,11 +29,14 @@ namespace ParallelWatki
             this.pictureBoxResult2 = new PictureBox();
             this.pictureBoxResult3 = new PictureBox();
             this.pictureBoxResult4 = new PictureBox();
+            InitializeComponent(); // Ważne, aby wywołać metodę generowaną przez projektanta
+            SetupLayout();         // Metoda do ustawienia kontrolek programowo
+            this.splitContainerMain.SplitterDistance = this.splitContainerMain.Width / 2;
+        }
 
-            // --- Konfiguracja Form2 ---
-            this.ClientSize = new Size(1880, 890);
-            this.Text = "Przetwarzanie Obrazu";
-            this.Name = "Form2";
+        private void SetupLayout()
+        {
+            this.SuspendLayout();
 
             // --- Przycisk Wczytywania Pliku (Góra) ---
             this.buttonLoadFile.Dock = DockStyle.Top;
@@ -59,13 +54,17 @@ namespace ParallelWatki
             this.buttonProcess.UseVisualStyleBackColor = true;
             this.buttonProcess.Click += new EventHandler(this.buttonProcess_Click);
 
+
+
             // --- SplitContainer (Dzieli obszar na lewy i prawy) ---
             this.splitContainerMain.Dock = DockStyle.Fill; // Wypełnia przestrzeń między przyciskami
             this.splitContainerMain.Orientation = Orientation.Vertical; // Podział pionowy (lewo/prawo)
             this.splitContainerMain.Name = "splitContainerMain";
             this.splitContainerMain.BorderStyle = BorderStyle.Fixed3D;
-            // Ustawienie początkowej pozycji podziału (około połowy)
-            this.splitContainerMain.SplitterDistance = this.ClientSize.Width / 2;
+
+            this.splitContainerMain.SplitterDistance = winWidth / 4;
+
+
 
 
             // --- Panel Lewy (w SplitContainer) ---
@@ -75,6 +74,7 @@ namespace ParallelWatki
             this.pictureBoxOriginal.BorderStyle = BorderStyle.FixedSingle;
             this.pictureBoxOriginal.SizeMode = PictureBoxSizeMode.Zoom; // Skaluje obraz zachowując proporcje
             this.splitContainerMain.Panel1.Controls.Add(this.pictureBoxOriginal);
+
 
             // --- Panel Prawy (w SplitContainer) ---
             // TableLayoutPanel do ułożenia 4 obrazów wynikowych
@@ -118,7 +118,7 @@ namespace ParallelWatki
 
         // --- Obsługa Zdarzeń ---
 
-        private void buttonLoadFile_Click(object sender, EventArgs e)
+        private void buttonLoadFile_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -149,59 +149,32 @@ namespace ParallelWatki
             }
         }
 
-        private void buttonProcess_Click(object sender, EventArgs e)
+        private void buttonProcess_Click(object? sender, EventArgs e)
         {
-            if (pictureBoxOriginal.Image == null)
-            {
+            if (pictureBoxOriginal.Image == null) {
                 MessageBox.Show("Najpierw wczytaj obraz oryginalny.", "Brak Obrazu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            } else try {
+                Thread[] thread = new Thread[4];
+                thread[0] = new Thread(progowanie);
+                thread[1] = new Thread(krawedz);
+                thread[2] = new Thread(negatyw);
+                thread[3] = new Thread(lustrzane);
+                foreach(Thread x in thread) x.Start();
+                foreach(Thread x in thread) x.Join();
+            } catch (Exception ex) {
+                MessageBox.Show($"Wystąpił bład w trakcie przetwarzania obrazów: {ex.Message}","Błąd",MessageBoxButtons.OK,MessageBoxIcon.Error);
             }
-
-            // ---------------------------------------------------------------
-            // TUTAJ UMIEŚĆ KOD DO PRZETWARZANIA OBRAZU
-            // Pobierz obraz z: pictureBoxOriginal.Image
-            // Wyniki (jako obiekty Image) umieść w:
-            // pictureBoxResult1.Image = wynik1;
-            // pictureBoxResult2.Image = wynik2;
-            // pictureBoxResult3.Image = wynik3;
-            // pictureBoxResult4.Image = wynik4;
-            // ---------------------------------------------------------------
-
-            MessageBox.Show("Tutaj nastąpi przetwarzanie obrazu (kod niezaimplementowany).");
-
-            // Przykładowe placeholder'y (usuń lub zastąp prawdziwym kodem)
-             // Create dummy images for testing layout
-            /*
-             Bitmap dummy = new Bitmap(200, 150);
-             using(Graphics g = Graphics.FromImage(dummy)) { g.Clear(Color.LightBlue); g.DrawString("Wynik 1", SystemFonts.DefaultFont, Brushes.Black, 10, 10); }
-             pictureBoxResult1.Image = (Bitmap)dummy.Clone();
-             using(Graphics g = Graphics.FromImage(dummy)) { g.Clear(Color.LightCoral); g.DrawString("Wynik 2", SystemFonts.DefaultFont, Brushes.Black, 10, 10); }
-             pictureBoxResult2.Image = (Bitmap)dummy.Clone();
-             using(Graphics g = Graphics.FromImage(dummy)) { g.Clear(Color.LightGreen); g.DrawString("Wynik 3", SystemFonts.DefaultFont, Brushes.Black, 10, 10); }
-             pictureBoxResult3.Image = (Bitmap)dummy.Clone();
-             using(Graphics g = Graphics.FromImage(dummy)) { g.Clear(Color.LightGoldenrodYellow); g.DrawString("Wynik 4", SystemFonts.DefaultFont, Brushes.Black, 10, 10); }
-             pictureBoxResult4.Image = (Bitmap)dummy.Clone();
-             dummy.Dispose();
-            */
         }
 
 
-        // --- Metoda InitializeComponent (Generowana przez projektanta) ---
-        // Pozostaw ją, jeśli używasz projektanta. Jeśli tworzysz UI tylko kodem,
-        // upewnij się, że jest wywoływana w konstruktorze.
-        // Zazwyczaj zawiera kod inicjalizujący komponenty dodane przez projektanta.
-        // Jeśli dodajesz WSZYSTKO w kodzie (jak w SetupLayout), ta metoda może być pusta
-        // lub zawierać podstawową inicjalizację formularza.
         private void InitializeComponent()
         {
             this.SuspendLayout();
-            //
-            // Form2
-            //
-            this.ClientSize = new System.Drawing.Size(282, 253); // Początkowy rozmiar, zostanie zmieniony w SetupLayout
+            this.ClientSize = new Size(winWidth, 890);
+            this.Text = "Przetwarzanie Obrazu";
             this.Name = "Form2";
             this.ResumeLayout(false);
-            // Dodatkowa inicjalizacja z projektanta może tu być
         }
 
     }
