@@ -5,10 +5,15 @@ namespace ParallelWatki
     public partial class Form3 : Form
     {
         private void progowanie() {
-            Bitmap ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
-            int width = ObrazBitmap.Width;
-            int height = ObrazBitmap.Height;
-
+            int width;
+            int height;
+            Bitmap ObrazBitmap;
+            lock(imageLock) {
+                ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
+                width = ObrazBitmap.Width;
+                height = ObrazBitmap.Height;
+            }
+            
             for(int h = 0; h < height; ++h) {
                 for(int w = 0; w < width; ++w) {
                     Color oryginalKolor = ObrazBitmap.GetPixel(w, h);
@@ -23,10 +28,16 @@ namespace ParallelWatki
 
 
         private void krawedz() {
-            Bitmap ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
-            int width = ObrazBitmap.Width;
-            int height = ObrazBitmap.Height;
-            Bitmap krawdzBitmap = new Bitmap(width, height);
+            Bitmap ObrazBitmap;;
+            int width;
+            int height;
+            Bitmap krawdzBitmap;
+            lock(imageLock) {
+                ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
+                width = ObrazBitmap.Width;
+                height = ObrazBitmap.Height;
+                krawdzBitmap = new Bitmap(width, height);
+            }
             int[,] sobelX = new int[,] {
                 { -1, 0, 1 },
                 { -2, 0, 2 },
@@ -65,9 +76,14 @@ namespace ParallelWatki
 
 
         private void negatyw() {
-            Bitmap ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
-            int width = ObrazBitmap.Width;
-            int height = ObrazBitmap.Height;
+            Bitmap ObrazBitmap;
+            int width;
+            int height;
+            lock(imageLock) {
+                ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
+                width = ObrazBitmap.Width;
+                height = ObrazBitmap.Height;
+            }
 
             for(int h = 0; h < height; ++h) {
                 for(int w = 0; w < width; ++w) {
@@ -85,10 +101,16 @@ namespace ParallelWatki
 
 
         private void lustrzane() { 
-            Bitmap ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
-            int width = ObrazBitmap.Width;
-            int height = ObrazBitmap.Height;
-            Bitmap lustrzanyBitmap = new Bitmap(width, height);
+            Bitmap ObrazBitmap;
+            int width;
+            int height;
+            Bitmap lustrzanyBitmap;
+            lock(imageLock) {
+                ObrazBitmap = new Bitmap(pictureBoxOriginal.Image !);
+                width = ObrazBitmap.Width;
+                height = ObrazBitmap.Height;
+                lustrzanyBitmap = new Bitmap(width, height);
+            }
 
             for(int h = 0; h < height; ++h) {
                 for(int w = 0; w < width; ++w) {

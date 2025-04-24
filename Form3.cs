@@ -10,6 +10,7 @@ namespace ParallelWatki
         private Button buttonLoadFile;
         private Button buttonProcess;
         private volatile PictureBox pictureBoxOriginal;
+        private readonly object imageLock = new object();
         private PictureBox pictureBoxResult1;
         private PictureBox pictureBoxResult2;
         private PictureBox pictureBoxResult3;
